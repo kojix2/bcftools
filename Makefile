@@ -44,7 +44,8 @@ OBJS     = main.o vcfindex.o tabix.o \
 	       read_consensus.o bam_sample.o \
            vcfsort.o cols.o extsort.o dist.o abuf.o \
            ccall.o em.o prob1.o kmin.o str_finder.o gff.o edlib.o \
-           mpileup2/mpileup.o
+           mpileup2/mpileup.o \
+           tanuki.o
 PLUGIN_OBJS = vcfplugin.o
 
 prefix      = /usr/local
@@ -220,7 +221,7 @@ test check: test-no-plugins
 endif  # PLUGINS_ENABLED
 
 bcftools: $(OBJS) $(HTSLIB)
-	$(CC) $(DYNAMIC_FLAGS) $(ALL_LDFLAGS) -o $@ $(OBJS) $(HTSLIB_LIB) -lm $(ALL_LIBS) $(GSL_LIBS) $(PERL_LIBS) -lpthread
+	$(CC) $(DYNAMIC_FLAGS) $(ALL_LDFLAGS) -o $@ $(OBJS) ../mruby/build/host/lib/libmruby.a $(HTSLIB_LIB) -lm $(ALL_LIBS) $(GSL_LIBS) $(PERL_LIBS) -lpthread
 
 plugins: $(PLUGINS)
 
@@ -304,6 +305,9 @@ extsort.o: extsort.c $(bcftools_h) extsort.h kheap.h
 smpl_ilist.o: smpl_ilist.c $(bcftools_h) $(smpl_ilist_h)
 gff.o: gff.c $(htslib_hts_h) $(htslib_khash_h)  $(htslib_khash_str2int_h) $(htslib_kseq_h) $(htslib_bgzf_h) $(bcftools_h) gff.h regidx.h
 csq.o: csq.c $(htslib_hts_h) $(htslib_vcf_h) $(htslib_synced_bcf_reader_h) $(htslib_khash_h) $(htslib_khash_str2int_h) $(htslib_kseq_h) $(htslib_faidx_h) $(htslib_bgzf_h) $(bcftools_h) $(filter_h) regidx.h kheap.h $(smpl_ilist_h) rbuf.h gff.h
+
+tanuki.o:
+	$(CC) tanuki.c -c -o $@ -L ../mruby/build/host/lib/ -I ../mruby/include -lmruby -lm
 
 # test programs
 
