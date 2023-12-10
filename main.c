@@ -62,6 +62,7 @@ int main_consensus(int argc, char *argv[]);
 int main_csq(int argc, char *argv[]);
 int main_mpileup(int argc, char *argv[]);
 int main_sort(int argc, char *argv[]);
+int main_tanuki(int argc, char *argv[]);
 
 typedef struct
 {
@@ -193,6 +194,10 @@ static cmd_t cmds[] =
       .alias = "som",
       .help  = "-filter using Self-Organized Maps (experimental)"   // do not advertise
 
+    },
+    { .func  = main_tanuki,
+      .alias = "tanuki",
+      .help  = "show a tanuki"
     },
     { .func  = NULL,
       .alias = NULL,
