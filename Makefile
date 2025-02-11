@@ -80,8 +80,13 @@ MISC_SCRIPTS = \
     misc/vcfutils.pl
 TEST_PROGRAMS = test/test-rbuf test/test-regidx
 
+MRBDIR       ?= ../mruby
+MRB_CPPFLAGS  = -I$(MRBDIR)/include
+MRB_LDFLAGS   = -L$(MRBDIR)/build/host/lib
+MRB_LIBS      = -lmruby -lm
+
 ALL_CPPFLAGS = -I. $(HTSLIB_CPPFLAGS) $(CPPFLAGS)
-ALL_LDFLAGS  = $(HTSLIB_LDFLAGS) $(LDFLAGS)
+ALL_LDFLAGS  = $(HTSLIB_LDFLAGS) $(LDFLAGS) $(MRB_LDFLAGS)
 ALL_LIBS     = -lz $(DL_LIBS) $(LIBS)
 
 all: $(PROGRAMS) $(TEST_PROGRAMS) plugins
@@ -220,8 +225,8 @@ test check: test-no-plugins
 
 endif  # PLUGINS_ENABLED
 
-bcftools: $(OBJS) $(HTSLIB)
-	$(CC) $(DYNAMIC_FLAGS) $(ALL_LDFLAGS) -o $@ $(OBJS) ../mruby/build/host/lib/libmruby.a $(HTSLIB_LIB) -lm $(ALL_LIBS) $(GSL_LIBS) $(PERL_LIBS) -lpthread
+bcftools: $(OBJS) $(HTSLIB) $(MRBDIR)/build/host/lib/libmruby.a
+	$(CC) $(DYNAMIC_FLAGS) $(ALL_LDFLAGS) -o $@ $(OBJS) $(HTSLIB_LIB) -lm $(ALL_LIBS) $(GSL_LIBS) $(PERL_LIBS) -lpthread -lmruby
 
 plugins: $(PLUGINS)
 
@@ -306,8 +311,8 @@ smpl_ilist.o: smpl_ilist.c $(bcftools_h) $(smpl_ilist_h)
 gff.o: gff.c $(htslib_hts_h) $(htslib_khash_h)  $(htslib_khash_str2int_h) $(htslib_kseq_h) $(htslib_bgzf_h) $(bcftools_h) gff.h regidx.h
 csq.o: csq.c $(htslib_hts_h) $(htslib_vcf_h) $(htslib_synced_bcf_reader_h) $(htslib_khash_h) $(htslib_khash_str2int_h) $(htslib_kseq_h) $(htslib_faidx_h) $(htslib_bgzf_h) $(bcftools_h) $(filter_h) regidx.h kheap.h $(smpl_ilist_h) rbuf.h gff.h
 
-tanuki.o:
-	$(CC) tanuki.c -c -o $@ -L ../mruby/build/host/lib/ -I ../mruby/include -lmruby -lm
+tanuki.o: tanuki.c
+	$(CC) $(CFLAGS) $(MRB_CPPFLAGS) $(MRB_LDFLAGS) -c -o $@ $< $(MRB_LIBS)
 
 # test programs
 
@@ -387,7 +392,6 @@ testclean-all: testclean testclean-htslib
 
 tags:
 	ctags -f TAGS *.[ch] plugins/*.[ch]
-
 force:
 
 .PHONY: all check check-all clean clean-all clean-plugins
